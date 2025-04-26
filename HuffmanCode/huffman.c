@@ -10,15 +10,15 @@
 
 // Huffman tree node
 struct MinHeapNode {
-    char data;                          // char
-    unsigned freq;                      // frequency of char        
-    struct MinHeapNode* left, * right;  // left and right children
+    char data;                          // Character
+    unsigned freq;                      // Frequency of character
+    struct MinHeapNode* left, * right;  // Left and right children
 };
 
-// Aray to store Huffman codes for each char
+// Array to store Huffman codes for each character
 char codes[256][MAX_TREE_HT];
 
-// Create a new min heap node for Huffman tree
+// Create a new node for Huffman tree
 struct MinHeapNode* createNode(char data, unsigned freq) {
     struct MinHeapNode* temp = (struct MinHeapNode*)malloc(sizeof(struct MinHeapNode));
     temp->left = temp->right = NULL;
@@ -27,7 +27,7 @@ struct MinHeapNode* createNode(char data, unsigned freq) {
     return temp;
 }
 
-// Calculate frequencies of characters in the input string
+// Calculate character frequencies in the input string
 void calcFrequencies(const char* str, int freq[], char* chars, int* uniqueCount) {
     int count[256] = { 0 };
     for (int i = 0; str[i]; i++)
@@ -43,7 +43,7 @@ void calcFrequencies(const char* str, int freq[], char* chars, int* uniqueCount)
     }
 }
 
-// Build the Huffman tree from chars and their frequencies
+// Build the Huffman tree from characters and their frequencies
 struct MinHeapNode* buildHuffmanTree(char data[], int freq[], int size) {
     // Create leaf nodes for each unique character
     struct MinHeapNode* nodes[256];
@@ -105,21 +105,22 @@ void buildCodes(struct MinHeapNode* root, int arr[], int top) {
     }
 }
 
-// Wrapper to initialize the code generation
+// Wrapper to initiate the code generation
 void printCodes(struct MinHeapNode* root, int arr[], int top) {
     buildCodes(root, arr, top);
 }
 
-// Write the header to the compressed file (frequecy table)
-void writeHeader(FILE* out, char chars[], int freq[], int uniqueCount) {
+// Write the header to the compressed file (frequency table and text length)
+void writeHeader(FILE* out, char chars[], int freq[], int uniqueCount, int textLength) {
     // Write number of unique characters
     fwrite(&uniqueCount, sizeof(int), 1, out);
-    
+
     // Write each character and its frequency
     for (int i = 0; i < uniqueCount; i++) {
         fwrite(&chars[i], sizeof(char), 1, out);
         fwrite(&freq[i], sizeof(int), 1, out);
     }
+    fwrite(&textLength, sizeof(int), 1, out); // Save original text length
 }
 
 // Compress a file using Huffman coding
@@ -150,7 +151,7 @@ void compress_file(const char* input_path, const char* output_path) {
 
     // Open output file and write header
     FILE* out = fopen(output_path, "wb");
-    writeHeader(out, chars, freq, uniqueCount);
+    writeHeader(out, chars, freq, uniqueCount, (int)strlen(text));
 
     // Encode and write text as bits
     uint8_t buffer = 0;
@@ -178,8 +179,8 @@ void compress_file(const char* input_path, const char* output_path) {
     printf("[INFO] Compression done.\n");
 }
 
-// Read and rebuild the Huffman tree from the file header of the compressed file
-struct MinHeapNode* rebuildTreeFromHeader(FILE* in) {
+// Read and rebuild the Huffman tree and text length from the file header
+struct MinHeapNode* rebuildTreeFromHeader(FILE* in, int* textLength) {
     int uniqueCount;
     fread(&uniqueCount, sizeof(int), 1, in);
     char chars[256];
@@ -188,6 +189,7 @@ struct MinHeapNode* rebuildTreeFromHeader(FILE* in) {
         fread(&chars[i], sizeof(char), 1, in);
         fread(&freq[i], sizeof(int), 1, in);
     }
+    fread(textLength, sizeof(int), 1, in);
     return buildHuffmanTree(chars, freq, uniqueCount);
 }
 
@@ -200,19 +202,26 @@ void decompress_file(const char* input_path, const char* output_path) {
     }
 
     // Rebuild Huffman tree from header
-    struct MinHeapNode* root = rebuildTreeFromHeader(in);
+    int textLength = 0;
+    struct MinHeapNode* root = rebuildTreeFromHeader(in, &textLength);
     struct MinHeapNode* curr = root;
     FILE* out = fopen(output_path, "w");
 
     // Read bits and traverse the Huffman tree
+    int decodedChars = 0;
     int byte;
-    while ((byte = fgetc(in)) != EOF) {
+    while (decodedChars < textLength) {
+        byte = fgetc(in);
+        if (byte == EOF) break;
+
         for (int i = 7; i >= 0; i--) {
+            if (decodedChars >= textLength) break;
             int bit = (byte >> i) & 1;
             curr = bit ? curr->right : curr->left;
             if (!curr->left && !curr->right) {
                 fputc(curr->data, out);
                 curr = root;
+                decodedChars++;
             }
         }
     }
@@ -244,7 +253,7 @@ void compress_message(const char* input, const char* output_path) {
     }
 
     if (output_path != NULL) fclose(out);
-    printf("[INFO] String compression done.\n");
+    printf("\n[INFO] String compression done.\n");
 }
 
 // Decompress a string (in memory)
