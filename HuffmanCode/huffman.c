@@ -11,8 +11,8 @@
 // Huffman tree node
 struct MinHeapNode {
     char data;                          // char
-	unsigned freq;  		            // frequency of char        
-	struct MinHeapNode* left, * right;  // left and right children
+	unsigned freq;                      // frequency of char        
+    struct MinHeapNode* left, * right;  // left and right children
 };
 
 // Aray to store Huffman codes for each char
@@ -45,11 +45,12 @@ void calcFrequencies(const char* str, int freq[], char* chars, int* uniqueCount)
 
 // Build the Huffman tree from chars and their frequencies
 struct MinHeapNode* buildHuffmanTree(char data[], int freq[], int size) {
+    // Create leaf nodes for each unique character
     struct MinHeapNode* nodes[256];
-
     for (int i = 0; i < size; i++)
         nodes[i] = createNode(data[i], freq[i]);
 
+    // Combine nodes until there is only one node (the root)
     int n = size;
     while (n > 1) {
         int min1 = 0, min2 = 1;
@@ -66,7 +67,8 @@ struct MinHeapNode* buildHuffmanTree(char data[], int freq[], int size) {
                 min2 = i;
             }
         }
-
+        
+        // Create new internal node with two minimum frequency children
         struct MinHeapNode* z = createNode('$', nodes[min1]->freq + nodes[min2]->freq);
         z->left = nodes[min1];
         z->right = nodes[min2];
@@ -110,7 +112,9 @@ void printCodes(struct MinHeapNode* root, int arr[], int top) {
 
 // Write the header to the compressed file (frequecy table)
 void writeHeader(FILE* out, char chars[], int freq[], int uniqueCount) {
+    // Write number of unique characters
     fwrite(&uniqueCount, sizeof(int), 1, out);
+    // Write each character and its frequency
     for (int i = 0; i < uniqueCount; i++) {
         fwrite(&chars[i], sizeof(char), 1, out);
         fwrite(&freq[i], sizeof(int), 1, out);
@@ -125,6 +129,7 @@ void compress_file(const char* input_path, const char* output_path) {
         return;
     }
 
+    // Read entire input file into memory
     fseek(in, 0, SEEK_END);
     long len = ftell(in);
     rewind(in);
@@ -133,6 +138,7 @@ void compress_file(const char* input_path, const char* output_path) {
     text[len] = '\0';
     fclose(in);
 
+    // Build Huffman tree based on text frequencies
     int freq[256];
     char chars[256];
     int uniqueCount = 0;
@@ -141,9 +147,11 @@ void compress_file(const char* input_path, const char* output_path) {
     int arr[MAX_TREE_HT];
     printCodes(root, arr, 0);
 
+    // Open output file and write header
     FILE* out = fopen(output_path, "wb");
     writeHeader(out, chars, freq, uniqueCount);
 
+    // Encode and write text as bits
     uint8_t buffer = 0;
     int bit_count = 0;
     for (int i = 0; text[i]; i++) {
@@ -190,10 +198,12 @@ void decompress_file(const char* input_path, const char* output_path) {
         return;
     }
 
+    // Rebuild Huffman tree from header
     struct MinHeapNode* root = rebuildTreeFromHeader(in);
     struct MinHeapNode* curr = root;
     FILE* out = fopen(output_path, "w");
 
+    // Read bits and traverse the Huffman tree
     int byte;
     while ((byte = fgetc(in)) != EOF) {
         for (int i = 7; i >= 0; i--) {
