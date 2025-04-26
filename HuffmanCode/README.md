@@ -25,12 +25,6 @@ You can compile the project with any C compiler that supports C23. Example with 
 gcc -std=c23 -o huffman main.c huffman.c
 ```
 
-Or use the provided `Makefile`:
-
-```bash
-make
-```
-
 ### 🖥️ Running
 
 #### Compression from file:
@@ -79,27 +73,14 @@ This allows reconstruction of the Huffman tree during decompression.
 
 ---
 
-## 🧠 Huffman Tree Visualization
-
-This implementation builds the tree in memory and uses it for encoding and decoding. If you're interested in visualizing it, consider extending `printCodes()` or writing the tree to a DOT graph.
-
----
-
 ## 📂 Project Structure
 
 ```text
 ├── main.c          # CLI entry point and argument parsing
 ├── huffman.c       # Core Huffman logic (compression, decompression)
 ├── huffman.h       # Header file with function declarations
-├── README.md       # Project documentation
-└── Makefile        # Optional: build automation (for GCC)
+└── README.md       # Project documentation
 ```
-
----
-
-## 📝 License
-
-This project is provided for educational purposes and is public domain unless specified otherwise.
 
 ---
 
