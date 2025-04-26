@@ -114,6 +114,7 @@ void printCodes(struct MinHeapNode* root, int arr[], int top) {
 void writeHeader(FILE* out, char chars[], int freq[], int uniqueCount) {
     // Write number of unique characters
     fwrite(&uniqueCount, sizeof(int), 1, out);
+    
     // Write each character and its frequency
     for (int i = 0; i < uniqueCount; i++) {
         fwrite(&chars[i], sizeof(char), 1, out);
