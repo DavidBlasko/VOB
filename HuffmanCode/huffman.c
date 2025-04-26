@@ -11,7 +11,7 @@
 // Huffman tree node
 struct MinHeapNode {
     char data;                          // char
-	unsigned freq;                      // frequency of char        
+    unsigned freq;                      // frequency of char        
     struct MinHeapNode* left, * right;  // left and right children
 };
 
