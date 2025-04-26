@@ -1,3 +1,12 @@
+# Huffman CLI Compressor / Decompressor
+
+![Language](https://img.shields.io/badge/language-C-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+A simple command-line Huffman encoder and decoder written in pure C (C23 standard). This project demonstrates lossless data compression using the Huffman coding algorithm, capable of reading from text or file inputs and producing binary `.huff` outputs.
+
+---
+
 ## 📚 Overview: What is Huffman Coding?
 
 **Huffman coding** is a lossless data compression algorithm developed by David A. Huffman in 1952. 
@@ -10,15 +19,6 @@ The process consists of:
 - Traversing the tree to assign codes: left traversal adds a '0', right traversal adds a '1'.
 
 The final compressed data, along with a header containing frequency information, allows reconstruction of the original data without loss.
-
----
-
-# Huffman CLI Compressor / Decompressor
-
-![Language](https://img.shields.io/badge/language-C-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-
-A simple command-line Huffman encoder and decoder written in pure C (C23 standard). This project demonstrates lossless data compression using the Huffman coding algorithm, capable of reading from text or file inputs and producing binary `.huff` outputs.
 
 ---
 
